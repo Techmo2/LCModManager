@@ -5,21 +5,6 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import java.util.List;
 
 public class LethalCompanyModVersion {
-    /* Versions example:
-        {
-        "name":"r2modman",
-        "full_name":"ebkr-r2modman-3.1.45",
-        "description":"A simple and easy to use mod manager for several games using Thunderstore",
-        "icon":"https://gcdn.thunderstore.io/live/repository/icons/ebkr-r2modman-3.1.45.png",
-        "version_number":"3.1.45",
-        "dependencies":[],
-        "download_url":"https://thunderstore.io/package/download/ebkr/r2modman/3.1.45/",
-        "downloads":695802,
-        "date_created":"2023-11-24T17:45:34.982794Z",
-        "website_url":"https://github.com/ebkr/r2modmanPlus",
-        "is_active":true,"uuid4":"25b7b6f3-6804-4d3a-8b94-9c31f99d678a",
-        "file_size":199387810}
-        */
     private String name;
     @JsonAlias({"full_name"})
     private String fullName;
