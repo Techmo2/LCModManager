@@ -27,10 +27,7 @@ public class PersistentConfig {
 
         // Create config file if it doesn't exist
         try {
-            if (!Files.exists(persistentFilePath)) {
-                Files.createDirectories(persistentFileDirectory);
-            }
-
+            loadFromFile();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
