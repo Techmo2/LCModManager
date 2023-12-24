@@ -1,6 +1,7 @@
 package brad.tillmann;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import de.skuzzle.semantic.Version;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,11 +15,9 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import de.skuzzle.semantic.Version;
-
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.WRITE;
-import static java.nio.file.StandardCopyOption.*;
 
 
 public class LCModVersion {
@@ -44,10 +43,27 @@ public class LCModVersion {
     @JsonAlias({"file_size"})
     private Long fileSize;
 
-    public LCModVersion()
-    {
+    public LCModVersion() {
 
     }
+
+    private static void unzipUrlToPath(final URL url, final Path destination) throws IOException {
+        try (ZipInputStream zipInputStream = new ZipInputStream(Channels.newInputStream(Channels.newChannel(url.openStream())))) {
+            for (ZipEntry entry = zipInputStream.getNextEntry(); entry != null; entry = zipInputStream.getNextEntry()) {
+                Path toPath = destination.resolve(entry.getName());
+                if (!toPath.startsWith(destination)) {
+                    // see: https://snyk.io/research/zip-slip-vulnerability
+                    throw new RuntimeException("Entry with an illegal path: " + entry.getName());
+                }
+                if (entry.isDirectory()) {
+                    Files.createDirectory(toPath);
+                } else try (FileChannel fileChannel = FileChannel.open(toPath, WRITE, CREATE/*, DELETE_ON_CLOSE*/)) {
+                    fileChannel.transferFrom(Channels.newChannel(zipInputStream), 0, Long.MAX_VALUE);
+                }
+            }
+        }
+    }
+
     public String getName() {
         return name;
     }
@@ -79,8 +95,8 @@ public class LCModVersion {
     public void setVersion(Version version) {
         this.version = version;
     }
-    public void setVersion(String versionString)
-    {
+
+    public void setVersion(String versionString) {
         this.version = Version.parseVersion(versionString);
     }
 
@@ -148,69 +164,44 @@ public class LCModVersion {
         this.fileSize = fileSize;
     }
 
-    public Path getDownloadDirectory()
-    {
+    public Path getDownloadDirectory() {
         return LCModManager.getModManagerDownloadDirectory().resolve(fullName).resolve(version.toString());
     }
 
-    public void download() throws IOException
-    {
-        if(!Files.exists(getDownloadDirectory())) {
+    public void download() throws IOException {
+        if (!Files.exists(getDownloadDirectory())) {
             // We will download the archive, then extract it to ${MOD_FULL_NAME}/${MOD_VERSION}
             // Ensure destination exists
             Path destination = getDownloadDirectory();
-            System.out.println(String.format("Downloading files for %s to %s", fullName, destination));
+            System.out.printf("Downloading files for %s to %s%n", fullName, destination);
             Files.createDirectories(destination);
 
             // Download and extract mod files
             unzipUrlToPath(new URL(downloadUrl), destination);
-        }
-        else
-        {
-            System.out.println(String.format("Mod files for %s version %s already exist. Skipping download.", fullName, version));
+        } else {
+            System.out.printf("Mod files for %s version %s already exist. Skipping download.%n", fullName, version);
         }
     }
 
-    public void install()
-    {
+    public void install() {
         try {
             if (!Files.exists(getDownloadDirectory()))
                 download();
 
             Path from = getDownloadDirectory().resolve("BepInEx");
-            if(!Files.exists(from))
+            if (!Files.exists(from))
                 throw new FileNotFoundException("Could not find BepInEx folder for mod");
 
             // Do the thing, and write a journal so we know how we modified the files (so we can uninstall)
             // TODO: Keep a copy of the replaced files as well for uninstallation
             copyFolder(from, LCModManager.getLethalCompanyInstallationDirectory());
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void uninstall()
-    {
+    public void uninstall() {
 
-    }
-
-    private static void unzipUrlToPath(final URL url, final Path destination) throws IOException {
-        try (ZipInputStream zipInputStream = new ZipInputStream(Channels.newInputStream(Channels.newChannel(url.openStream())))) {
-            for (ZipEntry entry = zipInputStream.getNextEntry(); entry != null; entry = zipInputStream.getNextEntry()) {
-                Path toPath = destination.resolve(entry.getName());
-                if (!toPath.startsWith(destination)) {
-                    // see: https://snyk.io/research/zip-slip-vulnerability
-                    throw new RuntimeException("Entry with an illegal path: " + entry.getName());
-                }
-                if (entry.isDirectory()) {
-                    Files.createDirectory(toPath);
-                } else try (FileChannel fileChannel = FileChannel.open(toPath, WRITE, CREATE/*, DELETE_ON_CLOSE*/)) {
-                    fileChannel.transferFrom(Channels.newChannel(zipInputStream), 0, Long.MAX_VALUE);
-                }
-            }
-        }
     }
 
     private void copyFolder(Path src, Path dest) throws IOException {
@@ -218,7 +209,7 @@ public class LCModVersion {
         try (Stream<Path> stream = Files.walk(src)) {
             stream.forEach(source -> {
                 Path to = dest.resolve(src.relativize(source));
-                if(Files.exists(to))
+                if (Files.exists(to))
                     journal.addEntry(source, to, LCModVersionInstallationJournal.FileOperationJournalEntry.REPLACE);
                 else
                     journal.addEntry(source, to, LCModVersionInstallationJournal.FileOperationJournalEntry.COPY);
@@ -230,8 +221,7 @@ public class LCModVersion {
         // It's likely the mod was already installed, and was just re-installed.
         LCModVersionInstallationJournal existingJournal = LCModVersionInstallationJournal.openExisting(this);
         boolean reinstalled = !existingJournal.getEntries().isEmpty() && journal.getEntries().stream().filter(entry -> !entry.getRight().equals(LCModVersionInstallationJournal.FileOperationJournalEntry.REPLACE)).count() == 0;
-        if(!reinstalled)
-        {
+        if (!reinstalled) {
             // Write journal if this is a new install
             journal.close();
         }

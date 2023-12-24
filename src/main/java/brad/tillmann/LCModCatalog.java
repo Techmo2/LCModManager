@@ -28,26 +28,17 @@ public class LCModCatalog {
             "owner", 3,
             "categories", 2
     );
-
-    private static class InitializationOnDemandClassHolder
-    {
-        private static final LCModCatalog instance = new LCModCatalog();
-
-    }
-
-    public static LCModCatalog getInstance()
-    {
-        return InitializationOnDemandClassHolder.instance;
-    }
-
     private Map<String, LCMod> modDescriptorsByFullName;
-    private LCModCatalog()
-    {
+
+    private LCModCatalog() {
         updateModCatalog();
     }
 
-    public void updateModCatalog()
-    {
+    public static LCModCatalog getInstance() {
+        return InitializationOnDemandClassHolder.instance;
+    }
+
+    public void updateModCatalog() {
         // Update package list
         modDescriptorsByFullName = Collections.emptyMap();
         try {
@@ -57,8 +48,7 @@ public class LCModCatalog {
                             descriptor -> descriptor,
                             (prev, next) -> next,
                             HashMap::new));
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -69,6 +59,7 @@ public class LCModCatalog {
      * It will then attempt to match each search term to one of a number of fields for each mod descriptor.
      * Matches for different fields will add different weights to the result. The result weight will determine its order in the returned list.
      * These fields are: name, fullName, owner, categories
+     *
      * @param searchString
      * @return
      */
@@ -78,13 +69,12 @@ public class LCModCatalog {
         List<Pair<LCMod, Integer>> results = new LinkedList<>();
 
         // Match terms for each mod descriptor
-        for(Map.Entry<String, LCMod> modDescriptorEntry: modDescriptorsByFullName.entrySet())
-        {
+        for (Map.Entry<String, LCMod> modDescriptorEntry : modDescriptorsByFullName.entrySet()) {
             LCMod descriptor = modDescriptorEntry.getValue();
             int weight = 0;
 
             // Calculate match weight
-            for(String searchTerm: searchTerms) {
+            for (String searchTerm : searchTerms) {
                 for (String field : searchTermWeightMap.keySet()) {
                     int fieldWeight = searchTermWeightMap.get(field);
 
@@ -95,14 +85,14 @@ public class LCModCatalog {
                         }
                     } else {
                         String fieldValue = BeanUtils.getProperty(descriptor, field);
-                        if(StringUtils.contains(fieldValue.toLowerCase(), searchTerm.toLowerCase()))
+                        if (StringUtils.contains(fieldValue.toLowerCase(), searchTerm.toLowerCase()))
                             weight += fieldWeight;
                     }
                 }
             }
 
             // Add search result entry
-            if(weight > 0)
+            if (weight > 0)
                 results.add(Pair.of(descriptor, weight));
         }
 
@@ -118,19 +108,17 @@ public class LCModCatalog {
         return modDescriptorsByFullName.get(fullName);
     }
 
-    private List<LCMod> readValueJackson(String content)
-    {
+    private List<LCMod> readValueJackson(String content) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         try {
-            return objectMapper.readValue(content, new TypeReference<List<LCMod>>(){});
+            return objectMapper.readValue(content, new TypeReference<List<LCMod>>() {
+            });
         } catch (IOException ioe) {
             throw new CompletionException(ioe);
         }
     }
-
-
 
     private List<LCMod> downloadModCatalog() throws Exception {
         HttpClient client = HttpClient.newHttpClient();
@@ -143,5 +131,10 @@ public class LCModCatalog {
                 .thenApply(HttpResponse::body)
                 .thenApply(this::readValueJackson)
                 .get();
+    }
+
+    private static class InitializationOnDemandClassHolder {
+        private static final LCModCatalog instance = new LCModCatalog();
+
     }
 }

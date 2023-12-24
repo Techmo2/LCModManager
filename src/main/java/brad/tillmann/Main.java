@@ -17,16 +17,11 @@ import java.util.List;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        try
-        {
+        try {
             run();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally
-        {
+        } finally {
             PersistentConfig.getInstance().flush();
         }
     }
@@ -37,12 +32,12 @@ public class Main {
         List<String> fields = List.of("name", "fullName", "owner", "packageUrl", "uuid");
         StringBuffer sb = new StringBuffer();
         sb.append("\n");
-        for(String field: fields)
+        for (String field : fields)
             sb.append(String.format("'%s' = '%s'\n", field, BeanUtils.getProperty(bepInEx, field)));
 
         sb.append("\nVersions:\n");
         List<LCModVersion> modVersions = bepInEx.getVersions();
-        for(LCModVersion modVersion: modVersions)
+        for (LCModVersion modVersion : modVersions)
             sb.append(String.format("\t%s\n", modVersion.getVersion().toString()));
 
         System.out.println(sb);

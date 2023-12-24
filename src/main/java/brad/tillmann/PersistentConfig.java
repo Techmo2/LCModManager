@@ -18,22 +18,10 @@ import java.util.Map;
 public class PersistentConfig {
     private static final Path persistentFileDirectory = Paths.get(AppDirsFactory.getInstance().getSiteConfigDir(LCModManager.class.getPackage().getImplementationTitle(), null, null));
     private static final Path persistentFilePath = persistentFileDirectory.resolve("persist.json");
-    private static class InitializationOnDemandClassHolder
-    {
-        private static final PersistentConfig instance = new PersistentConfig();
-
-    }
-
-    public static PersistentConfig getInstance()
-    {
-        return PersistentConfig.InitializationOnDemandClassHolder.instance;
-    }
-
-    private Map<String, Object> config;
     private final ObjectMapper objectMapper;
+    private Map<String, Object> config;
 
-    private PersistentConfig()
-    {
+    private PersistentConfig() {
         objectMapper = new ObjectMapper();
         config = Collections.emptyMap();
 
@@ -43,35 +31,34 @@ public class PersistentConfig {
                 Files.createDirectories(persistentFileDirectory);
             }
 
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
         }
     }
 
-    public Object getValue(String key)
-    {
+    public static PersistentConfig getInstance() {
+        return PersistentConfig.InitializationOnDemandClassHolder.instance;
+    }
+
+    public Object getValue(String key) {
         return config.get(key);
     }
 
-    public void setValue(String key, Object value)
-    {
+    public void setValue(String key, Object value) {
         config.put(key, value);
     }
 
-    public void flush()
-    {
+    public void flush() {
         try {
             saveToFile();
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void saveToFile() throws IOException {
-        if(!Files.exists(persistentFileDirectory))
+        if (!Files.exists(persistentFileDirectory))
             Files.createDirectories(persistentFileDirectory);
 
         ObjectWriter objectWriter = objectMapper.writer(new DefaultPrettyPrinter());
@@ -88,5 +75,10 @@ public class PersistentConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         config = objectMapper.readValue(new File(persistentFilePath.toUri()), Map.class);
+    }
+
+    private static class InitializationOnDemandClassHolder {
+        private static final PersistentConfig instance = new PersistentConfig();
+
     }
 }

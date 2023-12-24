@@ -22,14 +22,7 @@ public class LCModPack {
     private List<LCMod> modDescriptors;
     private Map<String, LCModVersion> modVersionMap;
 
-    public static LCModPack fromFile(File file) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper.readValue(file, LCModPack.class);
-    }
-
-    public LCModPack()
-    {
+    public LCModPack() {
         this.name = "New Mod Pack";
         this.author = "";
         this.version = "1.0.0";
@@ -37,6 +30,12 @@ public class LCModPack {
         this.modified = new Timestamp(System.currentTimeMillis());
         this.modDescriptors = new ArrayList<>();
         this.modVersionMap = new HashMap<>();
+    }
+
+    public static LCModPack fromFile(File file) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper.readValue(file, LCModPack.class);
     }
 
     public String getName() {
@@ -87,26 +86,22 @@ public class LCModPack {
         this.modVersionMap = modVersionMap;
     }
 
-    public LCModVersion getModVersion(String uuid)
-    {
+    public LCModVersion getModVersion(String uuid) {
         return modVersionMap.get(uuid);
     }
 
-    public void setModVersion(String uuid, LCModVersion modVersion)
-    {
-        if(modVersionMap.containsKey(uuid))
+    public void setModVersion(String uuid, LCModVersion modVersion) {
+        if (modVersionMap.containsKey(uuid))
             modVersionMap.replace(uuid, modVersion);
         else
             modVersionMap.put(uuid, modVersion);
     }
 
-    public List<LCMod> getModDescriptors()
-    {
+    public List<LCMod> getModDescriptors() {
         return modDescriptors;
     }
 
-    public void setModDescriptors(List<LCMod> modDescriptors)
-    {
+    public void setModDescriptors(List<LCMod> modDescriptors) {
         this.modDescriptors = modDescriptors;
     }
 

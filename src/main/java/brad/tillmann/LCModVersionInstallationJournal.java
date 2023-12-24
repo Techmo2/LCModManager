@@ -16,76 +16,63 @@ import java.util.List;
 
 public class LCModVersionInstallationJournal {
 
-    public enum FileOperationJournalEntry
-    {
-        COPY,
-        REPLACE,
-        DELETE
-    }
-
-    public static LCModVersionInstallationJournal openExisting(LCModVersion modVersion)
-    {
-        LCModVersionInstallationJournal installationJournal = new LCModVersionInstallationJournal(modVersion);
-
-        try
-        {
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            installationJournal.journal = objectMapper.readValue(new File(getJournalFilePath(modVersion).toUri()), new TypeReference<List<Triple<Path, Path, FileOperationJournalEntry>>>(){});
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        return installationJournal;
-    }
-
-    public static LCModVersionInstallationJournal openNew(LCModVersion modVersion)
-    {
-        LCModVersionInstallationJournal installationJournal = new LCModVersionInstallationJournal(modVersion);
-        return installationJournal;
-    }
-
-    public static boolean exists(LCModVersion modVersion)
-    {
-        return Files.exists(getJournalFilePath(modVersion));
-    }
-
-    private LCModVersion modVersion;
+    private final LCModVersion modVersion;
     private List<Triple<Path, Path, FileOperationJournalEntry>> journal;
 
-    private LCModVersionInstallationJournal(LCModVersion modVersion)
-    {
+    private LCModVersionInstallationJournal(LCModVersion modVersion) {
         this.modVersion = modVersion;
         journal = new ArrayList<>();
     }
 
-    public void addEntry(Path src, Path dest, FileOperationJournalEntry operation)
-    {
+    public static LCModVersionInstallationJournal openExisting(LCModVersion modVersion) {
+        LCModVersionInstallationJournal installationJournal = new LCModVersionInstallationJournal(modVersion);
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            installationJournal.journal = objectMapper.readValue(new File(getJournalFilePath(modVersion).toUri()), new TypeReference<List<Triple<Path, Path, FileOperationJournalEntry>>>() {
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return installationJournal;
+    }
+
+    public static LCModVersionInstallationJournal openNew(LCModVersion modVersion) {
+        LCModVersionInstallationJournal installationJournal = new LCModVersionInstallationJournal(modVersion);
+        return installationJournal;
+    }
+
+    public static boolean exists(LCModVersion modVersion) {
+        return Files.exists(getJournalFilePath(modVersion));
+    }
+
+    private static Path getJournalFilePath(LCModVersion modVersion) {
+        return LCModManager.getJournalDirectory().resolve(modVersion.getFullName()).resolve(modVersion.getVersion().toString()).resolve("journal.json");
+    }
+
+    public void addEntry(Path src, Path dest, FileOperationJournalEntry operation) {
         journal.add(Triple.of(src, dest, operation));
     }
 
-    public List<Triple<Path, Path, FileOperationJournalEntry>> getEntries()
-    {
+    public List<Triple<Path, Path, FileOperationJournalEntry>> getEntries() {
         return journal;
     }
 
-    public void close()
-    {
+    public void close() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             ObjectWriter objectWriter = objectMapper.writer(new DefaultPrettyPrinter());
             objectWriter.writeValue(new File(getJournalFilePath(modVersion).toUri()), journal);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static Path getJournalFilePath(LCModVersion modVersion)
-    {
-        return LCModManager.getJournalDirectory().resolve(modVersion.getFullName()).resolve(modVersion.getVersion().toString()).resolve("journal.json");
+    public enum FileOperationJournalEntry {
+        COPY,
+        REPLACE,
+        DELETE
     }
 }
