@@ -2,6 +2,7 @@ package brad.tillmann;
 
 import net.harawata.appdirs.AppDirsFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -9,8 +10,12 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import de.skuzzle.semantic.Version;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -19,83 +24,98 @@ import static java.nio.file.StandardOpenOption.WRITE;
  * This class manages the local installation of mods
  */
 public class LethalCompanyModManager {
+    private static class InitializationOnDemandClassHolder
+    {
+        private static final LethalCompanyModManager instance = new LethalCompanyModManager();
+    }
 
-    private static final Path lethalCompanyInstallationPath = Paths.get("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company");
-    private static final Path lethalCompanyExecutablePath = lethalCompanyInstallationPath.resolve("Lethal Company.exe");
-    private static final Path modManagerDataPath = Paths.get(AppDirsFactory.getInstance().getSiteDataDir(LethalCompanyModManager.class.getPackage().getImplementationTitle(), null, null));
+    public static LethalCompanyModManager getInstance()
+    {
+        return LethalCompanyModManager.InitializationOnDemandClassHolder.instance;
+    }
 
     /**
      * Create a new mod manager (autodetect lethal company installation path)
      */
-    public LethalCompanyModManager() throws IOException {
-        Files.createDirectories(modManagerDataPath);
+    private LethalCompanyModManager() {
+        try {
+            Files.createDirectories(getModManagerDataDirectory());
 
-        // Get lethal company installation directory & check it exists
-        if(!Files.exists(lethalCompanyInstallationPath) || !Files.exists(lethalCompanyExecutablePath))
-            throw new IOException(String.format("No Lethal Company installation found in directory %s. Please ensure the game is installed or try manually specifying the game installation directory.", lethalCompanyInstallationPath));
-    }
+            // Get lethal company installation directory & check it exists
+            if (!Files.exists(getLethalCompanyInstallationDirectory()) || !Files.exists(getLethalCompanyExecutablePath()))
+                throw new IOException(String.format("No Lethal Company installation found in directory %s. Please ensure the game is installed or try manually specifying the game installation directory.", getLethalCompanyInstallationDirectory()));
 
-    /**
-     * Downloads the contents of a given mod and version to the mod manager's data directory.
-     * This does not install the mod, but simply makes it available for installation.
-     * @param descriptor
-     * @param versionNumber
-     * @throws Exception
-     */
-    public void downloadModFiles(LethalCompanyModDescriptor descriptor, String versionNumber) throws Exception {
-        LethalCompanyModVersion modVersion = descriptor.getVersions().stream().filter(v -> versionNumber.equals(v.getVersionNumber())).findFirst().orElse(null);
-        if(modVersion == null)
-            throw new Exception(String.format("No version number matching %s exists for lethal company mod %s", versionNumber, descriptor.getName()));
-
-        // We will download the archive, then extract it to ${MOD_OWNER}-${MOD_NAME}/${MOD_VERSION}
-        // Ensure destination exists
-        Path modFilesDestination = modManagerDataPath.resolve("archives").resolve(descriptor.getOwner() + "-" + descriptor.getName()).resolve(modVersion.getVersionNumber());
-        Files.createDirectories(modFilesDestination);
-
-        // Download and extract mod files
-        unzipUrlToPath(new URL(modVersion.getDownloadUrl()), modFilesDestination);
-    }
-
-    public static void unzipUrlToPath(final URL url, final Path destination) throws IOException {
-        try (ZipInputStream zipInputStream = new ZipInputStream(Channels.newInputStream(Channels.newChannel(url.openStream())))) {
-            for (ZipEntry entry = zipInputStream.getNextEntry(); entry != null; entry = zipInputStream.getNextEntry()) {
-                Path toPath = destination.resolve(entry.getName());
-                if (!toPath.startsWith(destination)) {
-                    // see: https://snyk.io/research/zip-slip-vulnerability
-                    throw new RuntimeException("Entry with an illegal path: " + entry.getName());
-                }
-                if (entry.isDirectory()) {
-                    Files.createDirectory(toPath);
-                } else try (FileChannel fileChannel = FileChannel.open(toPath, WRITE, CREATE/*, DELETE_ON_CLOSE*/)) {
-                    fileChannel.transferFrom(Channels.newChannel(zipInputStream), 0, Long.MAX_VALUE);
-                }
-            }
+        } catch (IOException ex)
+        {
+            ex.printStackTrace();
+            System.exit(-1);
         }
     }
 
-    public void installBepInEx()
-    {
-        // TODO: Add BepInEx to game folder
+    public void installModPack(LethalCompanyModPack modPack) throws Exception {
+        for(LethalCompanyMod mod: modPack.getModDescriptors())
+        {
+            LethalCompanyModVersion modVersion = modPack.getModVersion(mod.getUuid());
+            modVersion.install();
+        }
     }
 
-    public void uninstallBepInEx()
+    public void uninstallModPack(LethalCompanyModPack modPack)
     {
-        // TODO: Remove BepInEx from game folder
+        for(LethalCompanyMod mod: modPack.getModDescriptors())
+        {
+            LethalCompanyModVersion modVersion = modPack.getModVersion(mod.getUuid());
+            modVersion.uninstall();
+        }
     }
 
-    public boolean isBepInExInstalled()
+    public static Path getLethalCompanyInstallationDirectory()
     {
-        // TODO: Check for BepInEx in game folder
-        return false;
+        return Paths.get("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company");
     }
 
-    public void installMod(LethalCompanyModDescriptor modDescriptor, LethalCompanyModVersion version)
+    public static Path getLethalCompanyExecutablePath()
     {
-        // TODO: Download the given mod version and install to the game folder
+        return getLethalCompanyInstallationDirectory().resolve("Lethal Company.exe");
     }
 
-    public void uninstallAllMods()
+    public static Path getModManagerDataDirectory()
     {
-        // TODO: Uninstall all mods from the game folder (leaving BepInEx installed)
+        return Paths.get(AppDirsFactory.getInstance().getSiteDataDir(LethalCompanyModManager.class.getPackage().getImplementationTitle(), null, null));
+    }
+
+    public static Path getModManagerConfigDirectory()
+    {
+        return Paths.get(AppDirsFactory.getInstance().getSiteConfigDir(LethalCompanyModManager.class.getPackage().getImplementationTitle(), null, null));
+    }
+
+    public static Path getModManagerDownloadDirectory()
+    {
+        return getModManagerDataDirectory().resolve("downloads");
+    }
+
+    public static Path getJournalDirectory()
+    {
+        return getModManagerDataDirectory().resolve("journal");
+    }
+
+    private LethalCompanyModVersion selectModVersion(LethalCompanyMod descriptor, Version version)
+    {
+        if(version == null && !descriptor.getVersions().isEmpty())
+        {
+            // Use newest version
+            List<LethalCompanyModVersion> modVersions = descriptor.getVersions();
+            modVersions.sort(Comparator.comparing(LethalCompanyModVersion::getVersion));
+            Collections.reverse(modVersions);
+            return modVersions.get(0);
+        }
+
+        return descriptor.getVersions().stream()
+                .filter(v -> {
+                    assert version != null;
+                    return version.equals(v.getVersion());
+                })
+                .findFirst()
+                .orElse(null);
     }
 }

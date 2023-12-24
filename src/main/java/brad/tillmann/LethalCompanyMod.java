@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 
 import java.util.List;
 
-public class LethalCompanyModDescriptor {
+public class LethalCompanyMod {
     private String name;
     @JsonAlias({"full_name"})
     private String fullName;
@@ -32,7 +32,7 @@ public class LethalCompanyModDescriptor {
 
     //private Map<String, Object> properties;
 
-    public LethalCompanyModDescriptor()
+    public LethalCompanyMod()
     {
 
     }
@@ -149,5 +149,10 @@ public class LethalCompanyModDescriptor {
 
     public void setVersions(List<LethalCompanyModVersion> versions) {
         this.versions = versions;
+    }
+
+    public void download()
+    {
+
     }
 }

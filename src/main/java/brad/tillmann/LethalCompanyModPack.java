@@ -19,7 +19,7 @@ public class LethalCompanyModPack {
     private String version;
     private Timestamp created;
     private Timestamp modified;
-    private List<LethalCompanyModDescriptor> modDescriptors;
+    private List<LethalCompanyMod> modDescriptors;
     private Map<String, LethalCompanyModVersion> modVersionMap;
 
     public static LethalCompanyModPack fromFile(File file) throws IOException {
@@ -100,12 +100,12 @@ public class LethalCompanyModPack {
             modVersionMap.put(uuid, modVersion);
     }
 
-    public List<LethalCompanyModDescriptor> getModDescriptors()
+    public List<LethalCompanyMod> getModDescriptors()
     {
         return modDescriptors;
     }
 
-    public void setModDescriptors(List<LethalCompanyModDescriptor> modDescriptors)
+    public void setModDescriptors(List<LethalCompanyMod> modDescriptors)
     {
         this.modDescriptors = modDescriptors;
     }

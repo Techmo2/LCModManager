@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.swing.filechooser.FileFilter;
@@ -23,14 +22,10 @@ public class ModPacksForm {
     private JButton removeModPackButton; // TODO: Implement once we implement mod pack persistence (i.e. saving what packs we have so we dont need to import them every time)
     private JButton installModPackButton;
     private JButton uninstallModsButton;
-    private LethalCompanyModCatalog modCatalog;
-    private LethalCompanyModManager modManager;
     private Map<String, LethalCompanyModPack> modPacksByName;
 
     public ModPacksForm() throws IOException {
         modPacksByName = new HashMap<>();
-        modCatalog = new LethalCompanyModCatalog(); // This will block execution for a few seconds as the catalog is downloaded
-        modManager = new LethalCompanyModManager();
         importModPackButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -141,8 +136,7 @@ public class ModPacksForm {
                     return;
                 }
 
-                modCatalog.updateModCatalog();
-                for(LethalCompanyModDescriptor modDescriptor: selectedModPack.getModDescriptors())
+                for(LethalCompanyMod modDescriptor: selectedModPack.getModDescriptors())
                 {
                     LethalCompanyModVersion modVersion = selectedModPack.getModVersion(modDescriptor.getUuid());
                     // TODO: Verify mod and version exist in catalog
