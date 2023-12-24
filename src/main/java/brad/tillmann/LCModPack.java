@@ -13,22 +13,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LethalCompanyModPack {
+public class LCModPack {
     private String name;
     private String author;
     private String version;
     private Timestamp created;
     private Timestamp modified;
-    private List<LethalCompanyMod> modDescriptors;
-    private Map<String, LethalCompanyModVersion> modVersionMap;
+    private List<LCMod> modDescriptors;
+    private Map<String, LCModVersion> modVersionMap;
 
-    public static LethalCompanyModPack fromFile(File file) throws IOException {
+    public static LCModPack fromFile(File file) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper.readValue(file, LethalCompanyModPack.class);
+        return objectMapper.readValue(file, LCModPack.class);
     }
 
-    public LethalCompanyModPack()
+    public LCModPack()
     {
         this.name = "New Mod Pack";
         this.author = "";
@@ -79,20 +79,20 @@ public class LethalCompanyModPack {
         this.modified = modified;
     }
 
-    public Map<String, LethalCompanyModVersion> getModVersionMap() {
+    public Map<String, LCModVersion> getModVersionMap() {
         return modVersionMap;
     }
 
-    public void setModVersionMap(Map<String, LethalCompanyModVersion> modVersionMap) {
+    public void setModVersionMap(Map<String, LCModVersion> modVersionMap) {
         this.modVersionMap = modVersionMap;
     }
 
-    public LethalCompanyModVersion getModVersion(String uuid)
+    public LCModVersion getModVersion(String uuid)
     {
         return modVersionMap.get(uuid);
     }
 
-    public void setModVersion(String uuid, LethalCompanyModVersion modVersion)
+    public void setModVersion(String uuid, LCModVersion modVersion)
     {
         if(modVersionMap.containsKey(uuid))
             modVersionMap.replace(uuid, modVersion);
@@ -100,12 +100,12 @@ public class LethalCompanyModPack {
             modVersionMap.put(uuid, modVersion);
     }
 
-    public List<LethalCompanyMod> getModDescriptors()
+    public List<LCMod> getModDescriptors()
     {
         return modDescriptors;
     }
 
-    public void setModDescriptors(List<LethalCompanyMod> modDescriptors)
+    public void setModDescriptors(List<LCMod> modDescriptors)
     {
         this.modDescriptors = modDescriptors;
     }

@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PersistentConfig {
-    private static final Path persistentFileDirectory = Paths.get(AppDirsFactory.getInstance().getSiteConfigDir(LethalCompanyModManager.class.getPackage().getImplementationTitle(), null, null));
+    private static final Path persistentFileDirectory = Paths.get(AppDirsFactory.getInstance().getSiteConfigDir(LCModManager.class.getPackage().getImplementationTitle(), null, null));
     private static final Path persistentFilePath = persistentFileDirectory.resolve("persist.json");
     private static class InitializationOnDemandClassHolder
     {
@@ -76,7 +76,7 @@ public class PersistentConfig {
 
         ObjectWriter objectWriter = objectMapper.writer(new DefaultPrettyPrinter());
         File file = new File(persistentFilePath.toUri());
-        objectWriter.writeValue(file, this);
+        objectWriter.writeValue(file, config);
     }
 
     private void loadFromFile() throws IOException {

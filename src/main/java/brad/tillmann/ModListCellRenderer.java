@@ -6,7 +6,7 @@ import java.awt.*;
 public class ModListCellRenderer extends DefaultListCellRenderer {
     @Override
     public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        LethalCompanyMod modDescriptor = (LethalCompanyMod) value;
+        LCMod modDescriptor = (LCMod) value;
 
         setText(String.format("%s by %s", modDescriptor.getName(), modDescriptor.getOwner()));
 

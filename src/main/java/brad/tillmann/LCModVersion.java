@@ -2,7 +2,6 @@ package brad.tillmann;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -10,18 +9,11 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.skuzzle.semantic.Version;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -29,7 +21,7 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static java.nio.file.StandardCopyOption.*;
 
 
-public class LethalCompanyModVersion {
+public class LCModVersion {
     private String name;
     @JsonAlias({"full_name"})
     private String fullName;
@@ -52,7 +44,7 @@ public class LethalCompanyModVersion {
     @JsonAlias({"file_size"})
     private Long fileSize;
 
-    public LethalCompanyModVersion()
+    public LCModVersion()
     {
 
     }
@@ -158,7 +150,7 @@ public class LethalCompanyModVersion {
 
     public Path getDownloadDirectory()
     {
-        return LethalCompanyModManager.getModManagerDownloadDirectory().resolve(fullName).resolve(version.toString());
+        return LCModManager.getModManagerDownloadDirectory().resolve(fullName).resolve(version.toString());
     }
 
     public void download() throws IOException
@@ -191,7 +183,7 @@ public class LethalCompanyModVersion {
 
             // Do the thing, and write a journal so we know how we modified the files (so we can uninstall)
             // TODO: Keep a copy of the replaced files as well for uninstallation
-            copyFolder(from, LethalCompanyModManager.getLethalCompanyInstallationDirectory());
+            copyFolder(from, LCModManager.getLethalCompanyInstallationDirectory());
         }
         catch (IOException e)
         {

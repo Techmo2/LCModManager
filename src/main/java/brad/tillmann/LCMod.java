@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 
 import java.util.List;
 
-public class LethalCompanyMod {
+public class LCMod {
     private String name;
     @JsonAlias({"full_name"})
     private String fullName;
@@ -28,11 +28,11 @@ public class LethalCompanyMod {
     @JsonAlias({"has_nsfw_content"})
     private boolean hasNsfwContent;
     private List<String> categories;
-    private List<LethalCompanyModVersion> versions; // Map of mod versions by version number
+    private List<LCModVersion> versions; // Map of mod versions by version number
 
     //private Map<String, Object> properties;
 
-    public LethalCompanyMod()
+    public LCMod()
     {
 
     }
@@ -143,11 +143,11 @@ public class LethalCompanyMod {
         this.categories = categories;
     }
 
-    public List<LethalCompanyModVersion> getVersions() {
+    public List<LCModVersion> getVersions() {
         return versions;
     }
 
-    public void setVersions(List<LethalCompanyModVersion> versions) {
+    public void setVersions(List<LCModVersion> versions) {
         this.versions = versions;
     }
 

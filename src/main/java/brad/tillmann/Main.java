@@ -32,7 +32,7 @@ public class Main {
     }
 
     public static void run() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, IOException {
-        LethalCompanyMod bepInEx = LethalCompanyModCatalog.getInstance().search("bepinexpack").stream().findFirst().orElseThrow();
+        LCMod bepInEx = LCModCatalog.getInstance().search("bepinexpack").stream().findFirst().orElseThrow();
 
         List<String> fields = List.of("name", "fullName", "owner", "packageUrl", "uuid");
         StringBuffer sb = new StringBuffer();
@@ -41,8 +41,8 @@ public class Main {
             sb.append(String.format("'%s' = '%s'\n", field, BeanUtils.getProperty(bepInEx, field)));
 
         sb.append("\nVersions:\n");
-        List<LethalCompanyModVersion> modVersions = bepInEx.getVersions();
-        for(LethalCompanyModVersion modVersion: modVersions)
+        List<LCModVersion> modVersions = bepInEx.getVersions();
+        for(LCModVersion modVersion: modVersions)
             sb.append(String.format("\t%s\n", modVersion.getVersion().toString()));
 
         System.out.println(sb);

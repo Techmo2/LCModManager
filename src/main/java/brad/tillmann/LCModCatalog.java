@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
-public class LethalCompanyModCatalog {
+public class LCModCatalog {
     private static final String jsonCatalogUrl = "https://thunderstore.io/c/lethal-company/api/v1/package/";
     private static final Map<String, Integer> searchTermWeightMap = Map.of(
             "name", 10,
@@ -31,17 +31,17 @@ public class LethalCompanyModCatalog {
 
     private static class InitializationOnDemandClassHolder
     {
-        private static final LethalCompanyModCatalog instance = new LethalCompanyModCatalog();
+        private static final LCModCatalog instance = new LCModCatalog();
 
     }
 
-    public static LethalCompanyModCatalog getInstance()
+    public static LCModCatalog getInstance()
     {
         return InitializationOnDemandClassHolder.instance;
     }
 
-    private Map<String, LethalCompanyMod> modDescriptorsByFullName;
-    private LethalCompanyModCatalog()
+    private Map<String, LCMod> modDescriptorsByFullName;
+    private LCModCatalog()
     {
         updateModCatalog();
     }
@@ -53,7 +53,7 @@ public class LethalCompanyModCatalog {
         try {
             modDescriptorsByFullName = downloadModCatalog().stream()
                     .collect(Collectors.toMap(
-                            LethalCompanyMod::getFullName,
+                            LCMod::getFullName,
                             descriptor -> descriptor,
                             (prev, next) -> next,
                             HashMap::new));
@@ -72,15 +72,15 @@ public class LethalCompanyModCatalog {
      * @param searchString
      * @return
      */
-    public List<LethalCompanyMod> search(String searchString) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public List<LCMod> search(String searchString) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         // Create search terms
         String[] searchTerms = searchString.toLowerCase().split("\\s+");
-        List<Pair<LethalCompanyMod, Integer>> results = new LinkedList<>();
+        List<Pair<LCMod, Integer>> results = new LinkedList<>();
 
         // Match terms for each mod descriptor
-        for(Map.Entry<String, LethalCompanyMod> modDescriptorEntry: modDescriptorsByFullName.entrySet())
+        for(Map.Entry<String, LCMod> modDescriptorEntry: modDescriptorsByFullName.entrySet())
         {
-            LethalCompanyMod descriptor = modDescriptorEntry.getValue();
+            LCMod descriptor = modDescriptorEntry.getValue();
             int weight = 0;
 
             // Calculate match weight
@@ -114,17 +114,17 @@ public class LethalCompanyModCatalog {
                 .collect(Collectors.toList());
     }
 
-    public LethalCompanyMod getModDescriptorByFullName(String fullName) {
+    public LCMod getModDescriptorByFullName(String fullName) {
         return modDescriptorsByFullName.get(fullName);
     }
 
-    private List<LethalCompanyMod> readValueJackson(String content)
+    private List<LCMod> readValueJackson(String content)
     {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         try {
-            return objectMapper.readValue(content, new TypeReference<List<LethalCompanyMod>>(){});
+            return objectMapper.readValue(content, new TypeReference<List<LCMod>>(){});
         } catch (IOException ioe) {
             throw new CompletionException(ioe);
         }
@@ -132,7 +132,7 @@ public class LethalCompanyModCatalog {
 
 
 
-    private List<LethalCompanyMod> downloadModCatalog() throws Exception {
+    private List<LCMod> downloadModCatalog() throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(jsonCatalogUrl))

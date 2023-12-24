@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class LCModVersionInstallationJournal {
@@ -24,7 +23,7 @@ public class LCModVersionInstallationJournal {
         DELETE
     }
 
-    public static LCModVersionInstallationJournal openExisting(LethalCompanyModVersion modVersion)
+    public static LCModVersionInstallationJournal openExisting(LCModVersion modVersion)
     {
         LCModVersionInstallationJournal installationJournal = new LCModVersionInstallationJournal(modVersion);
 
@@ -42,21 +41,21 @@ public class LCModVersionInstallationJournal {
         return installationJournal;
     }
 
-    public static LCModVersionInstallationJournal openNew(LethalCompanyModVersion modVersion)
+    public static LCModVersionInstallationJournal openNew(LCModVersion modVersion)
     {
         LCModVersionInstallationJournal installationJournal = new LCModVersionInstallationJournal(modVersion);
         return installationJournal;
     }
 
-    public static boolean exists(LethalCompanyModVersion modVersion)
+    public static boolean exists(LCModVersion modVersion)
     {
         return Files.exists(getJournalFilePath(modVersion));
     }
 
-    private LethalCompanyModVersion modVersion;
+    private LCModVersion modVersion;
     private List<Triple<Path, Path, FileOperationJournalEntry>> journal;
 
-    private LCModVersionInstallationJournal(LethalCompanyModVersion modVersion)
+    private LCModVersionInstallationJournal(LCModVersion modVersion)
     {
         this.modVersion = modVersion;
         journal = new ArrayList<>();
@@ -85,8 +84,8 @@ public class LCModVersionInstallationJournal {
         }
     }
 
-    private static Path getJournalFilePath(LethalCompanyModVersion modVersion)
+    private static Path getJournalFilePath(LCModVersion modVersion)
     {
-        return LethalCompanyModManager.getJournalDirectory().resolve(modVersion.getFullName()).resolve(modVersion.getVersion().toString()).resolve("journal.json");
+        return LCModManager.getJournalDirectory().resolve(modVersion.getFullName()).resolve(modVersion.getVersion().toString()).resolve("journal.json");
     }
 }
