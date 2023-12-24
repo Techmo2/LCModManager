@@ -73,28 +73,28 @@ public class LethalCompanyModManager {
         }
     }
 
-    private void installBepInEx()
+    public void installBepInEx()
     {
         // TODO: Add BepInEx to game folder
     }
 
-    private void uninstallBepInEx()
+    public void uninstallBepInEx()
     {
         // TODO: Remove BepInEx from game folder
     }
 
-    private boolean isBepInExInstalled()
+    public boolean isBepInExInstalled()
     {
         // TODO: Check for BepInEx in game folder
         return false;
     }
 
-    private void installMod(LethalCompanyModDescriptor modDescriptor, LethalCompanyModVersion version)
+    public void installMod(LethalCompanyModDescriptor modDescriptor, LethalCompanyModVersion version)
     {
         // TODO: Download the given mod version and install to the game folder
     }
 
-    private void uninstallAllMods()
+    public void uninstallAllMods()
     {
         // TODO: Uninstall all mods from the game folder (leaving BepInEx installed)
     }

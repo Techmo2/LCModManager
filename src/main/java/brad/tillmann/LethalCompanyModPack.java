@@ -9,7 +9,9 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LethalCompanyModPack {
     private String name;
@@ -17,24 +19,24 @@ public class LethalCompanyModPack {
     private String version;
     private Timestamp created;
     private Timestamp modified;
-    private List<LethalCompanyModVersion> modVersions;
+    private List<LethalCompanyModDescriptor> modDescriptors;
+    private Map<String, LethalCompanyModVersion> modVersionMap;
 
-    public static LethalCompanyModPack fromFile(String path) throws IOException {
+    public static LethalCompanyModPack fromFile(File file) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        File file = new File(path);
         return objectMapper.readValue(file, LethalCompanyModPack.class);
     }
 
-    public LethalCompanyModPack(String author)
+    public LethalCompanyModPack()
     {
         this.name = "New Mod Pack";
-        this.author = author;
+        this.author = "";
         this.version = "1.0.0";
         this.created = new Timestamp(System.currentTimeMillis());
         this.modified = new Timestamp(System.currentTimeMillis());
-        this.modVersions = new ArrayList<>();
+        this.modDescriptors = new ArrayList<>();
+        this.modVersionMap = new HashMap<>();
     }
 
     public String getName() {
@@ -77,17 +79,40 @@ public class LethalCompanyModPack {
         this.modified = modified;
     }
 
-    public List<LethalCompanyModVersion> getModVersions() {
-        return modVersions;
+    public Map<String, LethalCompanyModVersion> getModVersionMap() {
+        return modVersionMap;
     }
 
-    public void setModVersions(List<LethalCompanyModVersion> modVersions) {
-        this.modVersions = modVersions;
+    public void setModVersionMap(Map<String, LethalCompanyModVersion> modVersionMap) {
+        this.modVersionMap = modVersionMap;
     }
 
-    public void toFile(String path) throws IOException {
+    public LethalCompanyModVersion getModVersion(String uuid)
+    {
+        return modVersionMap.get(uuid);
+    }
+
+    public void setModVersion(String uuid, LethalCompanyModVersion modVersion)
+    {
+        if(modVersionMap.containsKey(uuid))
+            modVersionMap.replace(uuid, modVersion);
+        else
+            modVersionMap.put(uuid, modVersion);
+    }
+
+    public List<LethalCompanyModDescriptor> getModDescriptors()
+    {
+        return modDescriptors;
+    }
+
+    public void setModDescriptors(List<LethalCompanyModDescriptor> modDescriptors)
+    {
+        this.modDescriptors = modDescriptors;
+    }
+
+    public void toFile(File file) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectWriter objectWriter = objectMapper.writer(new DefaultPrettyPrinter());
-        objectWriter.writeValue(new File(path), this);
+        objectWriter.writeValue(file, this);
     }
 }
